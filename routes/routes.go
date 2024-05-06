@@ -2,10 +2,26 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/go-playground/validator/v10"
+	"example.com/prueba/database"
 )
 
+type UserInput struct {
+	Username string `json:"username" validate:"required,min=4,max=20"`
+	Password string `json:"password" validate:"required,min=8"`
+}
+
 func SetupRoutes(app *fiber.App) {
+	db := database.GetInstance()
+	defer db.Close()
 	app.Post("/auth/login", func(c *fiber.Ctx) error {
+		validate := validator.New()
+		var user UserInput
+		if err:= validate.Struct(&user); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
 		return c.JSON(fiber.Map{"activo": "si"})
 	})
 
